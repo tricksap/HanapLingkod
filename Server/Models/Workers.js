@@ -51,6 +51,7 @@ const workerSchema = new mongoose.Schema(
     //   },
     // ],
     rating: Number,
+    liveness: String,
     deleteflag: { type: Boolean, default: 0 },
   },
   { timestamps: true }

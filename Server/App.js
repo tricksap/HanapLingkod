@@ -99,6 +99,7 @@ const upload = multer({ storage: storage });
 const multipleFile = upload.fields([
   { name: "govId" },
   { name: "certificate" },
+  { name: "Liveness" },
 ]);
 
 app.get("/images/:filename", async function (req, res) {
@@ -375,6 +376,27 @@ app.post("/signup/worker", multipleFile, async (req, res) => {
     const GovIdURL = await cloudinary.uploader.upload(req.files.govId[0].path, {
       folder: "HanapLingkod/GovId",
     });
+    console.log("GovID Uploaded");
+
+    const livenessVideo = await cloudinary.uploader.upload(
+      req.files.Liveness[0].path,
+      {
+        resource_type: "video",
+        folder: "HanapLingkod/liveness",
+        chunk_size: 6000000,
+        eager: [
+          { width: 300, height: 300, crop: "pad", audio_codec: "none" },
+          {
+            width: 160,
+            height: 100,
+            crop: "crop",
+            gravity: "south",
+            audio_codec: "none",
+          },
+        ],
+      }
+    );
+    console.log("Live Video Uploaded");
 
     //hash the password using bcrypt
     const salt = await bcrypt.genSalt(10);
@@ -402,6 +424,7 @@ app.post("/signup/worker", multipleFile, async (req, res) => {
       workDescription: req.body.workDescription,
       works: SubCategory,
       role: "worker",
+      liveness: livenessVideo.url,
       verification: false,
       accountStatus: "active",
     };
@@ -412,6 +435,7 @@ app.post("/signup/worker", multipleFile, async (req, res) => {
           folder: "HanapLingkod/certificate",
         }
       );
+      console.log("License Uploaded");
       workerObj.licenseCertificate = CertificateURL.url;
     }
 
@@ -497,8 +521,29 @@ app.post(
       const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
       const CertificateURL = await cloudinary.uploader.upload(req.file.path, {
-        folder: "HanapLingkod/certificate",
+        folder: "HanapLingkod/GovId",
       });
+      console.log("GovID Uploaded");
+
+      const livenessVideo = await cloudinary.uploader.upload(
+        req.files.Liveness[0].path,
+        {
+          resource_type: "video",
+          folder: "HanapLingkod/liveness",
+          chunk_size: 6000000,
+          eager: [
+            { width: 300, height: 300, crop: "pad", audio_codec: "none" },
+            {
+              width: 160,
+              height: 100,
+              crop: "crop",
+              gravity: "south",
+              audio_codec: "none",
+            },
+          ],
+        }
+      );
+      console.log("Live Video Uploaded");
 
       const recruiter = new Recruiter({
         username: req.body.username,
@@ -518,6 +563,7 @@ app.post(
         emailAddress: req.body.emailAddress,
         profilePic: "pic",
         GovId: CertificateURL.url,
+        liveness: livenessVideo.url,
         verification: false,
         accountStatus: "active",
         role: "recruiter",
