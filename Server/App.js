@@ -509,78 +509,76 @@ app.post("/signup/worker", multipleFile, async (req, res) => {
 });
 
 //signup recruiter
-app.post(
-  "/signup/recruiter",
-  // Check.ifRecruiterExist,
-  // Check.ifWorkerExist,
-  upload.single("govId"),
-  async (req, res) => {
-    try {
-      console.log(req.file);
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(req.body.password, salt);
+app.post("/signup/recruiter", multipleFile, async (req, res) => {
+  try {
+    console.log(req.files);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
-      const CertificateURL = await cloudinary.uploader.upload(req.file.path, {
+    const CertificateURL = await cloudinary.uploader.upload(
+      req.files.govId[0].path,
+      {
         folder: "HanapLingkod/GovId",
-      });
-      console.log("GovID Uploaded");
+      }
+    );
+    console.log("GovID Uploaded");
 
-      const livenessVideo = await cloudinary.uploader.upload(
-        req.files.Liveness[0].path,
-        {
-          resource_type: "video",
-          folder: "HanapLingkod/liveness",
-          chunk_size: 6000000,
-          eager: [
-            { width: 300, height: 300, crop: "pad", audio_codec: "none" },
-            {
-              width: 160,
-              height: 100,
-              crop: "crop",
-              gravity: "south",
-              audio_codec: "none",
-            },
-          ],
-        }
-      );
-      console.log("Live Video Uploaded");
+    const livenessVideo = await cloudinary.uploader.upload(
+      req.files.Liveness[0].path,
+      {
+        resource_type: "video",
+        folder: "HanapLingkod/liveness",
+        chunk_size: 6000000,
+        eager: [
+          { width: 300, height: 300, crop: "pad", audio_codec: "none" },
+          {
+            width: 160,
+            height: 100,
+            crop: "crop",
+            gravity: "south",
+            audio_codec: "none",
+          },
+        ],
+      }
+    );
+    console.log("Live Video Uploaded");
+    console.log(livenessVideo.url);
 
-      const recruiter = new Recruiter({
-        username: req.body.username,
-        password: hashedPassword,
-        firstname: req.body.firstname,
-        lastname: req.body.lastname,
-        middlename: req.body.middlename,
-        birthday: req.body.birthday,
-        age: req.body.age,
-        sex: req.body.sex,
-        street: req.body.street,
-        purok: req.body.purok,
-        barangay: req.body.barangay,
-        city: req.body.city,
-        province: req.body.province,
-        phoneNumber: req.body.phoneNumber,
-        emailAddress: req.body.emailAddress,
-        profilePic: "pic",
-        GovId: CertificateURL.url,
-        liveness: livenessVideo.url,
-        verification: false,
-        accountStatus: "active",
-        role: "recruiter",
-      });
-      recruiter.save((err) => {
-        if (err) {
-          res.json({ message: err.message, type: "danger" });
-        } else {
-          console.log("Recruiter account created");
-          res.send("Recruiter account created");
-        }
-      });
-    } catch {
-      res.status(500).send();
-    }
+    const recruiter = new Recruiter({
+      username: req.body.username,
+      password: hashedPassword,
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+      middlename: req.body.middlename,
+      birthday: req.body.birthday,
+      age: req.body.age,
+      sex: req.body.sex,
+      street: req.body.street,
+      purok: req.body.purok,
+      barangay: req.body.barangay,
+      city: req.body.city,
+      province: req.body.province,
+      phoneNumber: req.body.phoneNumber,
+      emailAddress: req.body.emailAddress,
+      profilePic: "pic",
+      GovId: CertificateURL.url,
+      liveness: livenessVideo.url,
+      verification: false,
+      accountStatus: "active",
+      role: "recruiter",
+    });
+    recruiter.save((err) => {
+      if (err) {
+        res.json({ message: err.message, type: "danger" });
+      } else {
+        console.log("Recruiter account created");
+        res.send("Recruiter account created");
+      }
+    });
+  } catch {
+    res.status(500).send();
   }
-);
+});
 
 app.use(function (req, res, next) {
   // Website you wish to allow to connect
